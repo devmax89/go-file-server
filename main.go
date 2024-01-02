@@ -118,7 +118,7 @@ func main() {
     key := "cert/key.pem"
 
     log.Println("Avvio del server sulla porta 443")
-    err := http.ListenAndServeTLS(":443", cert, key, nil)
+    err := http.ListenAndServeTLS("0.0.0.0:443", cert, key, nil)
     if err != nil {
         log.Fatal(err)
     }
