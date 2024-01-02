@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualizza file</title>
+    <style>
+        body {
+            background-color: lightblue;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        button {
+            width: 150px;  /* Imposta la larghezza che preferisci */
+            margin-top: 20px;  /* Aggiunge spazio sopra al bottone */
+        }
+    </style>
+</head>
+<body>
+    <h1>File</h1>
+    <ul>
+        {{range .Files}}
+        <li><a href="/file/{{.}}">{{.}}</a></li>
+        {{end}}
+    </ul>
+    <button onclick="location.href='/'" type="button">Torna alla Home Page</button>
+</body>
+</html>
