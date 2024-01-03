@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: file-volume
+  namespace: web-server
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/media/psf/Home/Developer/progetti/Coding/Golang/web-server/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: file-claim
+  namespace: web-server
+spec:
+  storageClassName: manual
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+  namespace: web-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+      - name: web-server
+        image: web-server:1.0.0
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - name: file-storage
+          mountPath: /web-server/file
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "500m"
+            memory: "500Mi"
+      volumes:
+      - name: file-storage
+        persistentVolumeClaim:
+          claimName: file-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-server-service
+  namespace: web-server
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 443
+    targetPort: 443
+    protocol: TCP
+  selector:
+    app: web-server

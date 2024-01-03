@@ -17,11 +17,20 @@ type PageData struct {
     Files []string
 }
 
+func logRequests(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        fmt.Printf("Received %s request for %s from %s\n", r.Method, r.URL.Path, r.RemoteAddr)
+        next.ServeHTTP(w, r)
+    })
+}
+
 func main() {
 
     fmt.Println("Version:", Version)
 
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    mux := http.NewServeMux()
+
+    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         tmpl, err := template.ParseFiles("templates/home.html")
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -34,7 +43,7 @@ func main() {
         }
     })
 
-    http.HandleFunc("/uploadpage", func(w http.ResponseWriter, r *http.Request) {
+    mux.HandleFunc("/uploadpage", func(w http.ResponseWriter, r *http.Request) {
         tmpl, err := template.ParseFiles("templates/upload.html")
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -47,7 +56,7 @@ func main() {
         }
     })
 
-    http.HandleFunc("/viewpage", func(w http.ResponseWriter, r *http.Request) {
+    mux.HandleFunc("/viewpage", func(w http.ResponseWriter, r *http.Request) {
         entries, err := os.ReadDir("./file")
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,7 +81,17 @@ func main() {
         }
     })
 
-    http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+    mux.HandleFunc("/delete", func(w http.ResponseWriter, r *http.Request) {
+        file := r.URL.Query().Get("file")
+        err := os.Remove("./file/" + file)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        http.Redirect(w, r, "/viewpage", http.StatusSeeOther)
+    })
+
+    mux.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
         if r.Method != http.MethodPost {
             http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
             return
@@ -97,7 +116,7 @@ func main() {
         http.Redirect(w, r, "/", http.StatusSeeOther)
     })
 
-    http.HandleFunc("/file/", func(w http.ResponseWriter, r *http.Request) {
+    mux.HandleFunc("/file/", func(w http.ResponseWriter, r *http.Request) {
         fileName := r.URL.Path[len("/file/"):]
         file, err := os.Open("./file/" + fileName)
         if err != nil {
@@ -114,11 +133,13 @@ func main() {
         }
     })
 
+    mux.Handle("/media/", http.StripPrefix("/media/", http.FileServer(http.Dir("media"))))
+
     cert := "cert/cert.pem"
     key := "cert/key.pem"
 
     log.Println("Avvio del server sulla porta 443")
-    err := http.ListenAndServeTLS("0.0.0.0:443", cert, key, nil)
+    err := http.ListenAndServeTLS("0.0.0.0:443", cert, key, logRequests(mux))
     if err != nil {
         log.Fatal(err)
     }

@@ -16,14 +16,31 @@
             width: 150px;  /* Imposta la larghezza che preferisci */
             margin-top: 20px;  /* Aggiunge spazio sopra al bottone */
         }
+        .title {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        #loading {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <h1><img src="https://go.dev/images/go-logo-white.svg" alt="Go logo" width="50" height="50"> Upload Files</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="fileUpload">
         <input type="submit" value="Carica">
     </form>
+
+    <div id="loading">
+        <img src="/media/loading.gif" alt="Loading..." width="50" height="50" />
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';  // Mostra l'animazione di caricamento
+        });
+    </script>
+
     <button onclick="location.href='/'" type="button">Torna alla Home Page</button>
 </body>
 </html>
