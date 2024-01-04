@@ -13,8 +13,21 @@ import (
 var Version string
 
 // PageData rappresenta i dati da passare al template
-type PageData struct {
+type Data struct {
+    SpaceUsed float64
+    SpaceTotal float64
     Files []string
+}
+
+func DirSize(path string) (int64, error) {
+    var size int64
+    err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+        if !info.IsDir() {
+            size += info.Size()
+        }
+        return err
+    })
+    return size, err
 }
 
 func logRequests(next http.Handler) http.Handler {
@@ -66,10 +79,29 @@ func main() {
         for i, entry := range entries {
             fileNames[i] = entry.Name()
         }
-        data := PageData{
-            Files: fileNames,
+        size, err := DirSize("./file")
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
         }
-        tmpl, err := template.ParseFiles("templates/view.html")
+        totalSize := int64(8589934592) // Sostituisci con il valore reale
+        data := Data{
+            Files: fileNames,
+            SpaceUsed: float64(size) / 1024 / 1024 / 1024,
+            SpaceTotal: float64(totalSize) / 1024 / 1024 / 1024,
+        }
+        tmpl := template.New("view.html").Funcs(template.FuncMap{
+            "format": func(v float64) string {
+                return fmt.Sprintf("%.2f", v)
+            },
+            "div": func(a, b float64) float64 {
+                return a / b
+            },
+            "mul": func(a, b float64) float64 {
+                return a * b
+            },
+        })
+        tmpl, err = tmpl.ParseFiles("templates/view.html")
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
