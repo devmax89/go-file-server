@@ -44,7 +44,7 @@ func main() {
     mux := http.NewServeMux()
 
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        tmpl, err := template.ParseFiles("templates/home.html")
+        tmpl, err := template.ParseFiles("templates/index.html")
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
@@ -128,22 +128,30 @@ func main() {
             http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
             return
         }
-        file, header, err := r.FormFile("fileUpload")
+        err := r.ParseMultipartForm(10 << 20) // 10 MB
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
-        defer file.Close()
-        dst, err := os.Create("./file/" + filepath.Base(header.Filename))
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-        defer dst.Close()
-        _, err = io.Copy(dst, file)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
+        files := r.MultipartForm.File["fileUpload"]
+        for _, fileHeader := range files {
+            file, err := fileHeader.Open()
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+            defer file.Close()
+            dst, err := os.Create("./file/" + filepath.Base(fileHeader.Filename))
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+            defer dst.Close()
+            _, err = io.Copy(dst, file)
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
         }
         http.Redirect(w, r, "/", http.StatusSeeOther)
     })
