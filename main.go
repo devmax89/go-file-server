@@ -173,6 +173,29 @@ func main() {
         }
     })
 
+    mux.HandleFunc("/deleteAll", func(w http.ResponseWriter, r *http.Request) {
+        dir := "./file/"
+        d, err := os.Open(dir)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        defer d.Close()
+        names, err := d.Readdirnames(-1)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        for _, name := range names {
+            err = os.RemoveAll(filepath.Join(dir, name))
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+        }
+        http.Redirect(w, r, "/viewpage", http.StatusSeeOther)
+    })
+
     mux.Handle("/media/", http.StripPrefix("/media/", http.FileServer(http.Dir("media"))))
 
     cert := "cert/cert.pem"
