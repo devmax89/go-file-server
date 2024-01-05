@@ -15,7 +15,6 @@
         }
         .title {
             font-family: Arial, Helvetica, sans-serif;
-            margin-top: -50px;
         }
         .delete-icon {
             margin-left: 40px; /* Aumenta questo valore per aumentare lo spazio */
@@ -34,33 +33,55 @@
         a:hover {
             color: darkred;  /* Cambia il colore del link quando l'utente ci passa sopra con il mouse */
         }
+        .list-group-item {
+        background-color: #d7e3f0;  /* Grigio chiaro */
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            width: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
-    <h1 class="title"><img src="/media/Go-Logo_Blue.png" alt="Go logo" width="70" height="70"> View File</h1>
-    <ul class="list-group">
-        {{range .Files}}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <a href="/file/{{.}}">{{.}}</a>
-            <a class="delete-icon" href="/delete?file={{.}}">
-                <img src="media/trash-icon.png" alt="Elimina file" width="20" height="20">
-            </a>
-        </li>
-        {{end}}
-    </ul>
-    <button onclick="location.href='/'" type="button" class="btn btn-primary mt-3" style="width: 200px;">Torna alla Home Page</button>
-    <div class="progress" style="height: 30px; margin-top: 20px; display: flex; align-items: center; justify-content: center;">
-        <div class="progress-bar" role="progressbar" style="width: {{mul (div .SpaceUsed .SpaceTotal) 100}}%;" aria-valuenow="{{.SpaceUsed}}" aria-valuemin="0" aria-valuemax="{{.SpaceTotal}}">
+    <div class="form-container">
+        <h1 class="title"><img src="/media/Go-Logo_Blue.png" alt="Go logo" width="70" height="70"> View File</h1>
+        <ul class="list-group">
+            {{range .Files}}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="/file/{{.}}">{{.}}</a>
+                <a class="delete-icon" href="/delete?file={{.}}">
+                    <img src="media/trash-icon.png" alt="Elimina file" width="20" height="20">
+                </a>
+            </li>
+            {{end}}
+        </ul>
+        <button onclick="location.href='/'" type="button" class="btn btn-primary mt-3" style="width: 200px;">Torna alla Home Page</button>
+        <div class="progress" style="height: 30px; margin-top: 20px; display: flex; align-items: center; justify-content: center;">
+            <div class="progress-bar" role="progressbar" style="width: {{mul (div .SpaceUsed .SpaceTotal) 100}}%;" aria-valuenow="{{.SpaceUsed}}" aria-valuemin="0" aria-valuemax="{{.SpaceTotal}}">
+            </div>
+            <span style="position: absolute; color: black;">
+                {{ $spaceUsed := .SpaceUsed }}
+                {{ $spaceTotal := .SpaceTotal }}
+                {{ if lt $spaceUsed 1.0 }}
+                    Spazio utilizzato: {{format (mul $spaceUsed 1024)}} MB
+                {{ else }}
+                    Spazio utilizzato: {{format (mul $spaceUsed 1)}} GB
+                {{ end }}
+                /
+                {{ if lt $spaceTotal 1.0 }}
+                    Totale: {{format (mul $spaceTotal 1000)}} MB
+                {{ else }}
+                    Totale: {{format (mul $spaceTotal 1)}} GB
+                {{ end }}
+            </span>
         </div>
-        <span style="position: absolute; color: black;">
-            {{ $spaceUsed := .SpaceUsed }}
-            {{ $spaceTotal := .SpaceTotal }}
-            {{ if gt $spaceUsed 1.0 }}
-                Spazio utilizzato: {{format $spaceUsed}} GB / Totale: {{format $spaceTotal}} GB
-            {{ else }}
-                Spazio utilizzato: {{format (mul $spaceUsed 1024)}} MB / Totale: {{format (mul $spaceTotal 1024)}} MB
-            {{ end }}
-        </span>
     </div>
 </body>
 </html>

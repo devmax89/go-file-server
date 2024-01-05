@@ -15,7 +15,17 @@
         }
         .title {
             font-family: Arial, Helvetica, sans-serif;
-            margin-top: -50px;
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            width: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         #loading {
             display: none;
@@ -23,39 +33,41 @@
     </style>
 </head>
 <body>
-    <h1 class="title"><img src="/media/Go-Logo_Blue.png" alt="Go logo" width="70" height="70"> Upload File</h1>
-    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="mt-3">
-        <div class="custom-file">
-            <input type="file" class="custom-file-input" id="fileUpload" name="fileUpload">
-            <label class="custom-file-label" for="fileUpload">Scegli file</label>
+    <div class="form-container">
+        <h1 class="title"><img src="/media/Go-Logo_Blue.png" alt="Go logo" width="70" height="70"> Upload File</h1>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="mt-3">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" id="fileUpload" name="fileUpload">
+                <label class="custom-file-label" for="fileUpload">Scegli file</label>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Carica</button>
+        </form>
+
+        <div id="loading" class="mt-3">
+            <img src="/media/loading.gif" alt="Loading..." width="50" height="50" />
         </div>
-        <button type="submit" class="btn btn-primary mt-3">Carica</button>
-    </form>
 
-    <div id="loading" class="mt-3">
-        <img src="/media/loading.gif" alt="Loading..." width="50" height="50" />
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+        <script>
+            document.getElementById('uploadForm').addEventListener('submit', function(event) {
+                var fileInput = document.getElementById('fileUpload');
+                if (fileInput.files.length === 0) {
+                    event.preventDefault();  // Impedisce l'invio del modulo
+                    alert('Per favore, seleziona un file.');  // Mostra un messaggio di errore
+                } else {
+                    document.getElementById('loading').style.display = 'block';  // Mostra l'animazione di caricamento
+                }
+            });
+
+            // Aggiorna il label quando un file viene selezionato
+            $('.custom-file-input').on('change', function() { 
+                let fileName = $(this).val().split('\\').pop(); 
+                $(this).next('.custom-file-label').addClass("selected").html(fileName); 
+            });
+        </script>
+
+        <button class="btn btn-secondary mt-3" onclick="location.href='/'" type="button">Torna alla Home Page</button>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
-            var fileInput = document.getElementById('fileUpload');
-            if (fileInput.files.length === 0) {
-                event.preventDefault();  // Impedisce l'invio del modulo
-                alert('Per favore, seleziona un file.');  // Mostra un messaggio di errore
-            } else {
-                document.getElementById('loading').style.display = 'block';  // Mostra l'animazione di caricamento
-            }
-        });
-
-        // Aggiorna il label quando un file viene selezionato
-        $('.custom-file-input').on('change', function() { 
-            let fileName = $(this).val().split('\\').pop(); 
-            $(this).next('.custom-file-label').addClass("selected").html(fileName); 
-        });
-    </script>
-
-    <button class="btn btn-secondary mt-3" onclick="location.href='/'" type="button">Torna alla Home Page</button>
 </body>
 </html>
