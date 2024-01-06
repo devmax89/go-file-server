@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
       - name: web-server
-        image: web-server:1.0.0
+        image: web-server:1.0.1
         ports:
         - containerPort: 443
         volumeMounts:
