@@ -3,7 +3,7 @@ FROM golang:latest AS build
 
 WORKDIR /web-server
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags "-X main.Version=1.0.0" -o /web-server/web-server
+RUN CGO_ENABLED=0 go build -ldflags "-X main.Version=1.0.1" -o /web-server/web-server
 
 # Fase finale
 FROM scratch
